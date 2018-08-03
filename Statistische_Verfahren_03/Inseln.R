@@ -1,6 +1,6 @@
 ########   Blattläuse auf Inseln P3 ##########
 
-data = read.csv('/mnt/5A71DF116192D4FC/Dokumente/R/islands.csv')
+data = read.csv('data/islands.csv')
 laeuse = data$mf.presence + data$mt.presence
 plot(data$no.ramet, laeuse)
 plot(data$size, laeuse) # makes sense
