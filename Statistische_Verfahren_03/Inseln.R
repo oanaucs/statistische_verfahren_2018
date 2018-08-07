@@ -14,3 +14,16 @@ plot(data$mean.height, laeuse) # useable
 plot(data$dist.group, laeuse) #useable
 plot(data$mt.presence, data$mf.presence) # anders plotten
 
+
+########## export plots ##########
+name = names(data)
+name = gsub("[^0-9A-Za-z ]","" , name ,ignore.case = TRUE)
+for(i in 2:13){
+  png(filename= paste("plots/hist/",name[i], ".png" , sep = ""))
+  hist(data[,i], main = name[i])
+  
+}
+dev.off()
+
+###############logistic regression ####################
+library(ISLR)
