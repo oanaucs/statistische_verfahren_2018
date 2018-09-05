@@ -41,6 +41,7 @@ corrplot(correlations, method="circle")
 #library(mlbench)
 #missmap(data, col=c("blue", "red"), legend=FALSE)
 
+# Check out some possible models for mf.presence
 pairs(data, col=data$mf.presence)  
 
 glm.fit <- glm(data$mf.presence ~ data$no.ramet + data$no.ramet + data$dist.land + data$mean.height + data$dist.isl.MF, 
@@ -66,3 +67,39 @@ summary(glm.fit)
 glm.fit <- glm(data$mf.presence ~ data$dens.ramet:data$no.ramet + data$dist.land + data$dist.isl.MF + data$size + data$dens.group, 
                data = data, family = binomial)
 summary(glm.fit)
+
+
+# Check out some possible models for mt.presence
+pairs(data, col=data$mt.presence)  
+
+glm.fit <- glm(data$mt.presence ~ data$no.ramet + data$dist.land + data$mean.height + data$dis.isl.MT, 
+               data = data, family = binomial)
+summary(glm.fit)
+
+glm.fit <- glm(data$mt.presence ~ data$no.ramet:dens.ramet + data$dist.land + data$dis.isl.MT + data$size, 
+               data = data, family = binomial)
+summary(glm.fit)
+
+glm.fit <- glm(data$mt.presence ~ data$no.ramet + data$dist.land + data$dis.isl.MT + data$size + data$trees, 
+               data = data, family = binomial)
+summary(glm.fit)
+
+best.fit <- glm(data$mt.presence ~ data$no.ramet + data$dist.land + data$dis.isl.MT + data$size + data$dens.group:no.group, 
+               data = data, family = binomial)
+summary(best.fit)
+
+new.fit <- glm(data$mt.presence ~ data$no.ramet:dens.ramet + data$dist.land + data$dis.isl.MT + data$size + data$dens.group:no.group, 
+                data = data, family = binomial)
+summary(new.fit)
+
+glm.fit <- glm(data$mt.presence ~ data$dens.ramet + data$dist.land + data$dis.isl.MT + data$size + data$dens.group, 
+               data = data, family = binomial)
+summary(glm.fit)
+
+glm.fit <- glm(data$mt.presence ~ data$dens.ramet:data$no.ramet + data$dist.land + data$dis.isl.MT + data$size + data$dens.group, 
+               data = data, family = binomial)
+summary(glm.fit)
+
+
+install.packages("glmulti")
+ylibrary(glmulti)
