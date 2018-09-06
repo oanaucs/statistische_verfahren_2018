@@ -128,6 +128,49 @@ fisher_matrix
 
 
 library('mvtnorm')
+# model approximate distribution
 approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=fisher_matrix)
 approx_distribution
 hist(approx_distribution[,3])
+
+X <- model.matrix(glm.final)
+X
+
+s <- sigma(glm.final)
+
+mean <- X %*% coeff
+mean
+
+# for simulate()
+library('stats')
+
+
+# create loop for generating new pseudo observations
+experiments_no <- 1
+sample_size <- 10
+  
+new_data<- simulate(glm.final, experiments_no)
+new_data
+
+with_replacement <- F
+rows <- c(sample(1:NROW(data), sample_size, replace=with_replacement))
+rows
+new_X <- X[rows,]
+new_data <- new_data[rows,]
+new_X <- cbind(new_X, new_data)
+  
+new_X <- as.data.frame(new_X)
+new_X
+names(new_X)
+names(new_X)[2]<-"no.hab.no.group"
+names(new_X)[3]<-"no.hab.dist.land"
+names(new_X)[4]<-"trees.dis.isl.MT"
+names(new_X)[5]<-"trees.size"
+names(new_X)
+
+current_experiment <- glm(new_X$new_data ~ new_X$no.hab.no.group + new_X$no.hab.dist.land + new_X$trees.dis.isl.MT + new_X$trees.size,
+                                     data = new_X, family = binomial(link="logit"))
+summary(current_experiment)
+
+
+
