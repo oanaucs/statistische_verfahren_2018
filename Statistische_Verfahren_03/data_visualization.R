@@ -33,6 +33,8 @@ dev.off()
 ########## export plots ##########
 
 ###hist
+###density
+###index
 name = names(data)
 name = gsub("[^0-9A-Za-z ]","" , name ,ignore.case = TRUE)
 for(i in 2:10){
@@ -40,11 +42,12 @@ for(i in 2:10){
   #hist(data[,i], main = name[i])
   #png(filename= paste("plots/dens/",name[i], ".png" , sep = ""))
   #plot(density(data[,i]), main = name[i])
-  png(filename= paste("plots/index/",name[i], ".png" , sep = ""))
-  plot(sort(data[,i]),type = "p", main = name[i])
+  #png(filename= paste("plots/index/",name[i], ".png" , sep = ""))
+  #plot(sort(data[,i]),type = "p", main = name[i])
+  png(filename= paste("plots/boxplots_mf/",name[i], ".png" , sep = ""))
+  boxplot(data[,i] ~ data$mf.presence, main = name[i])
 }
 dev.off()
-
 
 
 

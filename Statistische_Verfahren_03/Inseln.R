@@ -15,6 +15,7 @@ plot(data$dist.group, laeuse) #useable
 plot(data$mt.presence, data$mf.presence) # anders plotten
 
 
+
 ########## export plots ##########
 name = names(data)
 name = gsub("[^0-9A-Za-z ]","" , name ,ignore.case = TRUE)
