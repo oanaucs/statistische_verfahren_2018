@@ -100,6 +100,34 @@ glm.fit <- glm(data$mt.presence ~ data$dens.ramet:data$no.ramet + data$dist.land
                data = data, family = binomial)
 summary(glm.fit)
 
+library(glmulti)
 
-install.packages("glmulti")
-ylibrary(glmulti)
+var_names <- c(colnames(data))
+var_names
+typeof(var_names)
+# remove mt.presence
+var_names <- var_names[-14]
+var_names
+var_names <- var_names[-14]
+var_names 
+
+vars <- names(data) %in% c("mt.presence", "mf.presence") 
+cleaned_data <- data[!vars]
+
+output <- glmulti(y = 'mt.presence', xr = var_names, data = data,  maxit=10)
+output
+
+glm.final <- glm(data$mt.presence ~ data$no.hab:data$no.group + data$no.hab:data$dist.land + data$trees:data$dis.isl.MT + data$trees:data$size, 
+               data = data, family = binomial(link="logit"))
+summary(glm.final)
+
+coeff<- coefficients(glm.final)
+summary(glm.final)
+fisher_matrix <- summary(glm.final)$cov.scaled
+fisher_matrix
+
+
+library('mvtnorm')
+approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=fisher_matrix)
+approx_distribution
+hist(approx_distribution[,3])
