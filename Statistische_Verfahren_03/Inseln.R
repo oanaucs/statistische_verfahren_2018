@@ -137,40 +137,60 @@ X <- model.matrix(glm.final)
 X
 
 s <- sigma(glm.final)
+s
 
 mean <- X %*% coeff
 mean
 
-# for simulate()
-library('stats')
+inv_mean <- exp(mean) / (exp(mean) + rep(1, NROW(mean) ))
+inv_mean 
+
+sample_size <- 10
+
+plot(residuals(glm.final))
+
 
 
 # create loop for generating new pseudo observations
-experiments_no <- 1
-sample_size <- 10
+experiments_no <- 2
+for (i in 1:experiments_no)
+{
+
+  # model distribution of explained variable
+  # new_y <- rnorm(n=sample_size, mean = mean, sd = s)
   
-new_data<- simulate(glm.final, experiments_no)
-new_data
-
-with_replacement <- F
-rows <- c(sample(1:NROW(data), sample_size, replace=with_replacement))
-rows
-new_X <- X[rows,]
-new_data <- new_data[rows,]
-new_X <- cbind(new_X, new_data)
+  with_replacement <- F
+  rows <- c(sample(1:NROW(data), sample_size, replace=with_replacement))
+  rows
+  new_X <- X[rows,]
+  new_X <- cbind(new_X, new_y)
+  new_X <- as.data.frame(new_X)
+  new_X
+  names(new_X)
+  names(new_X)[2]<-"no.hab.no.group"
+  names(new_X)[3]<-"no.hab.dist.land"
+  names(new_X)[4]<-"trees.dis.isl.MT"
+  names(new_X)[5]<-"trees.size"
+  names(new_X)
   
-new_X <- as.data.frame(new_X)
-new_X
-names(new_X)
-names(new_X)[2]<-"no.hab.no.group"
-names(new_X)[3]<-"no.hab.dist.land"
-names(new_X)[4]<-"trees.dis.isl.MT"
-names(new_X)[5]<-"trees.size"
-names(new_X)
+  mean <- new_X %*% coeff
+  mean
+  
+  inv_mean <- exp(mean) / (exp(mean) + rep(1, NROW(mean) ))
+  inv_mean 
+  
+  new_y <- rbinom(10, 1, mean)
+  
+  new_y
+  
+  
+  
+  current_experiment <- glm(new_X$new_y ~ new_X$no.hab.no.group + new_X$no.hab.dist.land + new_X$trees.dis.isl.MT + new_X$trees.size,
+                                       data = new_X, family = binomial(link="logit"))
+  summary(new.fit)
+}
 
-current_experiment <- glm(new_X$new_data ~ new_X$no.hab.no.group + new_X$no.hab.dist.land + new_X$trees.dis.isl.MT + new_X$trees.size,
-                                     data = new_X, family = binomial(link="logit"))
-summary(current_experiment)
-
+x <- citation()
+toBibtex(x)
 
 

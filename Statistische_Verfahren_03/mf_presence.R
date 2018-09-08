@@ -11,7 +11,7 @@ var_names
 numeric_data <- data
 numeric_data <- numeric_data[,-1]
 numeric_data <- mapply(numeric_data, FUN=as.numeric)
-numeric_data
+numeric_data <- as.data.frame(numeric_data)
 
 # use xtable package to export tables to latex
 library('xtable')
@@ -39,10 +39,11 @@ summary(simple)
 simple <- glm(data$mf.presence~ 1 + data$no.hab + 
                 # data$dist.isl.MF + 
                 data$no.group +
+                data$trees + 
                 # data$no.ramet +
                 # data$dist.land +
-                data$no.hab:data$no.group, 
-               # data$no.ramet:data$trees,
+                data$no.hab:data$no.group + 
+                data$no.ramet:data$trees,
               data=data, family=binomial(link='logit'))
 summary(simple)
 
@@ -50,3 +51,19 @@ corr_var_names <- c('no.hab', 'no.group', 'no.ramet', 'trees', 'size')
 
 output2 <- glmulti(y = 'mf.presence', xr = var_names, data = data, family=binomial(link='logit'))
 output2
+
+## different approach - forward and/or backward selection
+
+full <- glm(data$mf.presence~., data=numeric_data, family=binomial(link='logit'))
+summary(full)
+
+full_bw <- step(object = full, direction = 'backward')
+
+summary(full_bw)
+
+empty <- glm(data$mf.presence ~ 1, data=numeric_data, family=binomial(link='logit'))
+summary(empty)
+
+full_fw <- step(object = empty, scope=list(lower=empty, upper=full), direction = 'forward')
+
+summary(full_fw)
