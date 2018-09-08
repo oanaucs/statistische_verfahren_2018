@@ -3,8 +3,10 @@ data$trees <- as.factor(data$trees)
 
 ### Korrelationen
 library(corrplot)
-correlations <- cor(data[,2:12])
-corrplot(correlations, method="color")
+numeric_data <- data
+numeric_data <- mapply(numeric_data, FUN=as.numeric)
+correlations <- cor(numeric_data[,2:12])
+corrplot(correlations, method="number", type="upper")
 
 
 ### Scatter
