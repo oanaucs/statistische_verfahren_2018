@@ -12,6 +12,7 @@ X
 # calculate logits from model
 logits <- X %*% coefficients(glm.final)
 logits
+
 # calculate probabilities from logits
 probabilities <- exp(logits) / (exp(logits) + rep(1, NROW(logits) ))
 probabilities 
@@ -60,9 +61,20 @@ for (i in 1:no.experiments)
   # TODO save parameters
 }
 
-
+# necessary imports
+library('matrixcalc')
 library('mvtnorm')
+
+# extract necessary information 
+coeff<- coefficients(glm.final)
+summary(glm.final)
+cov <- summary(glm.final)$cov.scaled
+
+sigma <- cov * matrix.inverse(t(X) %*% X)
+# check if matrix is symmetric - condition for distribution
+isSymmetric(sigma)
+
 # model approximate distribution
-approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=fisher_matrix)
+approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=sigma)
 approx_distribution
-hist(approx_distribution[,3])
+hist(approx_distribution[,1])
