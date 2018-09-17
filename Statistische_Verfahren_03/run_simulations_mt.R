@@ -10,6 +10,7 @@ summary(model)
 # save our design matrix
 X <- model.matrix(model)
 colnames(X)
+X
 
 # calculate logits from model
 logits <- X %*% coefficients(model)
@@ -22,11 +23,11 @@ probabilities
 ### run simulations for sample size, for experiment
 
 # just do one experiment first for a sample size of 10
-no.experiments <- 100
+no.experiments <- 1000
 
 # select design matrix rows
-no.samples <- 30
-with_replacement <- F
+no.samples <- 60
+with_replacement <- T
 rows <- c(sample(1:NROW(data), no.samples, replace=with_replacement))
 rows
 
@@ -34,9 +35,13 @@ new_X <- X[rows,]
 new_X <- as.data.frame(new_X)
 colnames(new_X)
 
+new_X
 # rename columns for easier access
 colnames(new_X) <- c('intercept', 'dist.isl.MF', 'dist.group', 'no.ramet', 'dist.land', 'trees', 'dens.ramet', 'dens.group', 'int.ramet.trees')
 colnames(new_X)
+
+new_X
+
 
 
 simulations <- vector()
@@ -59,9 +64,11 @@ for (i in 1:no.experiments)
                               dist.land + trees + dens.ramet + dens.group + trees:no.ramet,
                             data = current_X, family = binomial(link="logit"))
   summary(current_experiment)
-  as.numeric(coefficients(current_experiment))
+ #  print(coefficients(current_experiment))
+  
+  # print(as.numeric(coefficients(current_experiment)))
   # TODO save parameters
-  simulations <- cbind(simulations, as.numeric(coefficients(current_experiment)))
+  simulations <- rbind(simulations, as.numeric(coefficients(current_experiment)))
 }
 
 simulations
@@ -71,7 +78,9 @@ library('matrixcalc')
 library('mvtnorm')
 
 # calculate covariance
-simulations.num <- simulations[,-1]
+simulations.num <- simulations
+simulations.num
+colnames(simulations.num)
 class(simulations.num)
 r <- nrow(simulations.num)
 r
@@ -90,17 +99,18 @@ isSymmetric(sigma)
 coeff <- coefficients(model)
 
 # model approximate distribution
-approx_distribution <- rmvnorm(n=100, mean=coeff, sigma=sigma)
+approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=sigma)
 approx_distribution
 
-# visualize histograms
-for (i in 1:ncol(approx_distribution))
-{
-  colname <- colnames(data)[i]
-  first <- hist(approx_distribution[,i], main=colname)
-  second <- hist(simulations.num[,i], main=colname)
-  max.val <- max(max(approx_distribution[,i]), simulations.num[,i])
-  min.val <- min(min(approx_distribution[,i]), simulations.num[,i])
-  plot(first, col=rgb(0,0,1,1/4), xlim=c(min.val, max.val), main=colname)
-  plot(second, col=rgb(1,0,0,1/4), add=T)
-}
+max.val <- max(max(approx_distribution[,9]), simulations.num[,9])
+min.val <- min(min(approx_distribution[,9]), simulations.num[,9])
+
+i=4
+name_approx <- paste('Approximatierte Normalverteilung', colnames(new_X)[i])
+plot(hist(approx_distribution[,i]), col=rgb(0,0,1,1/4), main=name_approx)
+name_sim <- paste('Simulierte Verteilung', colnames(new_X)[i])
+plot(hist(simulations.num[,i]), col=rgb(1,0,0,1/4), main=name_sim)
+
+library(entropy)
+KL.empirical(approx_distribution[,2], simulations.num[,2])
+
