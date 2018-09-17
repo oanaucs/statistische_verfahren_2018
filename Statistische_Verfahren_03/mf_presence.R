@@ -1,32 +1,48 @@
 data = read.csv('../statistische_verfahren_2018/data/islands.csv')
 
-# remove mt.presence, mf.presence and dist.isl.mt from variables
-var_names <- c(colnames(data))
-var_names
-var_names <- var_names[-14]
-var_names
-var_names <- var_names[-14]
-var_names 
-
 numeric_data <- data
 numeric_data <- numeric_data[,-1]
 numeric_data <- mapply(numeric_data, FUN=as.numeric)
 numeric_data <- as.data.frame(numeric_data)
 
-# use xtable package to export tables to latex
-library('xtable')
+### first approach - forward and/or backward selection
 
-# first, compute correlations to get an idea of the data
-correlation_matrix <- cor(numeric_data, method = c("spearman"))
-correlation_matrix
-print(xtable(correlation_matrix, type = "latex"), file = "./correlation_matrix.tex")
+full <- glm(data$mf.presence~., data=numeric_data, family=binomial(link='logit'))
+summary(full)
 
-library(corrplot)
-corrplot(correlation_matrix)
+full_bw <- step(object = full, direction = 'backward')
 
-corrplot(correlation_matrix, method='number')
+summary(full_bw)
 
-corr_var_names <- c('no.hab', 'no.group', 'no.ramet', 'trees', 'dist.isl.MF', 'dist.land')
+result_backward <- glm(formula = data$mf.presence ~ dis.isl.MT + no.hab + dens.group, 
+    family = binomial(link = "logit"), data = numeric_data)
+summary(result_backward)
+
+null <- glm(data$mf.presence ~ 1, data=numeric_data, family=binomial(link='logit'))
+summary(null)
+
+full_fw <- step(object = null, scope=list(lower=null, upper=full), data=numeric_data, direction = 'forward')
+summary(full_fw)
+
+full_both <- step(null, scope = list(upper=full), data=numeric_data, direction="both")
+summary(full_both)
+
+full_correlated <- glm(data$mf.presence ~ data$no.hab + data$no.ramet,data=numeric_data, family=binomial(link='logit'))
+
+summary(full_correlated)
+
+full_correlated <- step(object = full_correlated, direction = 'backward')
+
+summary(full_correlated)
+
+
+best <- glm(formula = mf.presence ~ dis.isl.MT + no.hab + dens.group + trees,  
+           family = binomial(link = "logit"), data = numeric_data)
+summary(best)
+
+### second approach - glmulti
+
+
 
 library(glmulti)
 

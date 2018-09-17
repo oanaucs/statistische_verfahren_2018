@@ -3,7 +3,6 @@ data = read.csv('../statistische_verfahren_2018/data/islands.csv')
 numeric_data <- data
 c(colnames(numeric_data))
 # remove mt.presence from data
-numeric_data<- numeric_data[,-(ncol(numeric_data) - 1)]
 c(colnames(numeric_data))
 # remove names
 numeric_data <- numeric_data[,-1]
@@ -11,19 +10,6 @@ c(colnames(numeric_data))
 # transform to numeric data
 numeric_data <- mapply(numeric_data, FUN=as.numeric)
 numeric_data <- as.data.frame(numeric_data)
-
-# use xtable package to export tables to latex
-library('xtable')
-
-# first, compute correlations to get an idea of the data
-correlation_matrix <- cor(numeric_data, method = c("spearman"))
-correlation_matrix
-print(xtable(correlation_matrix, type = "latex"), file = "./correlation_matrix.tex")
-
-library(corrplot)
-corrplot(correlation_matrix)
-
-corrplot(correlation_matrix, method='number')
 
 ### first approach - forward and/or backward selection
 
@@ -38,14 +24,29 @@ result_backward <- glm(formula = data$mt.presence ~ dist.isl.MF + dist.group + n
                          dist.land + trees + dens.ramet + dens.group, family = binomial(link = "logit"), 
                        data = numeric_data)
 
+summary(result_backward)
+
+result_backward_int <- glm(formula = data$mt.presence ~ dist.isl.MF + dist.group + no.ramet + 
+                         dist.land + trees + dens.ramet + dens.group+ trees:no.ramet, family = binomial(link = "logit"), 
+                       data = numeric_data)
+summary(result_backward_int)
+
 null <- glm(data$mt.presence ~ 1, data=numeric_data, family=binomial(link='logit'))
 summary(null)
 
-full_fw <- step(object = empty, scope=list(lower=null, upper=full), direction = 'forward')
-
+full_fw <- step(object = null, scope=list(lower=null, upper=full), data=numeric_data, direction = 'forward')
 summary(full_fw)
 
+full_both <- step(null, scope = list(upper=full), data=numeric_data, direction="both")
+summary(full_both)
 
+full_correlated <- glm(data$mt.presence ~ data$dist.group + data$size + data$no.group + data$no.ramet + data$no.hab + data$trees, data=numeric_data, family=binomial(link='logit'))
+
+summary(full_correlated)
+
+full_correlated <- step(object = full_correlated, direction = 'backward')
+
+summary(full_correlated)
 
 ### second approach - glmulti
 
