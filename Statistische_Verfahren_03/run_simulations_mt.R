@@ -22,7 +22,7 @@ probabilities
 ### run simulations for sample size, for experiment
 
 # just do one experiment first for a sample size of 10
-no.experiments <- 10
+no.experiments <- 100
 
 # select design matrix rows
 no.samples <- 30
@@ -83,16 +83,24 @@ class(simulations.num)
 simulations.cov <- cov(simulations.num)
 simulations.cov
 
-# extract necessary information 
-coeff<- coefficients(glm.final)
-summary(glm.final)
-cov <- summary(glm.final)$cov.scaled
-
-sigma <- cov * matrix.inverse(t(X) %*% X)
+sigma <- simulations.cov * matrix.inverse(t(X) %*% X)
 # check if matrix is symmetric - condition for distribution
 isSymmetric(sigma)
 
+coeff <- coefficients(model)
+
 # model approximate distribution
-approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=sigma)
+approx_distribution <- rmvnorm(n=100, mean=coeff, sigma=sigma)
 approx_distribution
-hist(approx_distribution[,1])
+
+# visualize histograms
+for (i in 1:ncol(approx_distribution))
+{
+  colname <- colnames(data)[i]
+  first <- hist(approx_distribution[,i], main=colname)
+  second <- hist(simulations.num[,i], main=colname)
+  max.val <- max(max(approx_distribution[,i]), simulations.num[,i])
+  min.val <- min(min(approx_distribution[,i]), simulations.num[,i])
+  plot(first, col=rgb(0,0,1,1/4), xlim=c(min.val, max.val), main=colname)
+  plot(second, col=rgb(1,0,0,1/4), add=T)
+}
