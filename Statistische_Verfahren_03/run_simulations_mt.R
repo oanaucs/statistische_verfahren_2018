@@ -2,18 +2,18 @@ data = read.csv('../statistische_verfahren_2018/data/islands.csv')
 data<-data[,-1]
 colnames(data)
 # create our model
-model <- glm(data$mt.presence ~ data$dist.isl.MF + data$dist.group + data$no.ramet + 
+glm.model <- glm(data$mt.presence ~ data$dist.isl.MF + data$dist.group + data$no.ramet + 
       data$dist.land + data$trees + data$dens.ramet + data$dens.group + data$trees:data$no.ramet, 
       family = binomial(link = "logit"), 
       data = data)
-summary(model)
+summary(glm.model)
 # save our design matrix
-X <- model.matrix(model)
+X <- model.matrix(glm.model)
 colnames(X)
 X
 
 # calculate logits from model
-logits <- X %*% coefficients(model)
+logits <- X %*% coefficients(glm.model)
 logits
 
 # calculate probabilities from logits
@@ -26,7 +26,7 @@ probabilities
 no.experiments <- 1000
 
 # select design matrix rows
-no.samples <- 60
+no.samples <- 200
 with_replacement <- T
 rows <- c(sample(1:NROW(data), no.samples, replace=with_replacement))
 rows
@@ -40,12 +40,8 @@ new_X
 colnames(new_X) <- c('intercept', 'dist.isl.MF', 'dist.group', 'no.ramet', 'dist.land', 'trees', 'dens.ramet', 'dens.group', 'int.ramet.trees')
 colnames(new_X)
 
-new_X
-
-
 
 simulations <- vector()
-simulations
 
 # run the experiment no.experiments times
 for (i in 1:no.experiments)
@@ -71,46 +67,37 @@ for (i in 1:no.experiments)
   simulations <- rbind(simulations, as.numeric(coefficients(current_experiment)))
 }
 
-simulations
-
 # necessary imports
 library('matrixcalc')
 library('mvtnorm')
 
 # calculate covariance
 simulations.num <- simulations
-simulations.num
-colnames(simulations.num)
 class(simulations.num)
 r <- nrow(simulations.num)
-r
 c <- ncol(simulations.num)
-c
+
 simulations.num <- as.matrix(simulations.num, nrow=r, ncol=c)
-simulations.num
 class(simulations.num)
 simulations.cov <- cov(simulations.num)
-simulations.cov
 
-sigma <- simulations.cov * matrix.inverse(t(X) %*% X)
-# check if matrix is symmetric - condition for distribution
-isSymmetric(sigma)
-
-coeff <- coefficients(model)
+coeff <- coefficients(glm.model)
 
 # model approximate distribution
-approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=sigma)
+approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=simulations.cov)
 approx_distribution
 
 max.val <- max(max(approx_distribution[,9]), simulations.num[,9])
 min.val <- min(min(approx_distribution[,9]), simulations.num[,9])
 
-i=4
+i=3
 name_approx <- paste('Approximatierte Normalverteilung', colnames(new_X)[i])
 plot(hist(approx_distribution[,i]), col=rgb(0,0,1,1/4), main=name_approx)
+
+i=9
 name_sim <- paste('Simulierte Verteilung', colnames(new_X)[i])
 plot(hist(simulations.num[,i]), col=rgb(1,0,0,1/4), main=name_sim)
 
 library(entropy)
-KL.empirical(approx_distribution[,2], simulations.num[,2])
+KL.empirical(approx_distribution[,1], simulations.num[,1])
 
