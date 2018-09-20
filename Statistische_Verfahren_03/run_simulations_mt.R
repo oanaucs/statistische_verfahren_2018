@@ -26,8 +26,12 @@ probabilities
 no.experiments <- 1000
 
 # select design matrix rows
-no.samples <- 200
-with_replacement <- T
+no.samples <- 20
+with_replacement <- F
+if (no.samples > nrow(data)) 
+{
+  with_replacement <- T
+}
 rows <- c(sample(1:NROW(data), no.samples, replace=with_replacement))
 rows
 
@@ -81,16 +85,15 @@ simulations.num <- as.matrix(simulations.num, nrow=r, ncol=c)
 class(simulations.num)
 simulations.cov <- cov(simulations.num)
 
-coeff <- coefficients(glm.model)
+simulations.mean <- colMeans(simulations.num)
 
 # model approximate distribution
-approx_distribution <- rmvnorm(n=1000, mean=coeff, sigma=simulations.cov)
+approx_distribution <- rmvnorm(n=1000, mean=simulations.mean, sigma=simulations.cov)
 approx_distribution
 
+i=3
 max.val <- max(max(approx_distribution[,9]), simulations.num[,9])
 min.val <- min(min(approx_distribution[,9]), simulations.num[,9])
-
-i=3
 name_approx <- paste('Approximatierte Normalverteilung', colnames(new_X)[i])
 plot(hist(approx_distribution[,i]), col=rgb(0,0,1,1/4), main=name_approx)
 
